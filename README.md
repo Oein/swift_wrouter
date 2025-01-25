@@ -4,6 +4,25 @@ Web like routing system with swipe backward forward gesture for iOS, and keyboar
 
 ## Usage
 
+### Defining your routings
+
+```swift
+WRouterView { url, qparm in
+    switch url {
+    case "/":
+        YourAwesomeView()
+    case "/profile":
+        MyPrettyProfile()
+    default:
+        // This is default 404 Page. (Not really HTTP 404)
+        // You can change it whatever design you want.
+        WRouter_NotFound()
+    }
+}
+```
+
+### Moving around urls
+
 ```swift
 // like clicking <a href="/main?a=123">
 WPath.shared.goto(path: "/main", qparm: "a=123")
