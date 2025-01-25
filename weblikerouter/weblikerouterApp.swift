@@ -13,5 +13,19 @@ struct weblikerouterApp: App {
         WindowGroup {
             ContentView()
         }
+        .commands(content: {
+#if os(macOS)
+            CommandMenu("Moving", content: {
+                Button("Backward") {
+                    WRouter_PathManager.shared.backward()
+                }
+                .keyboardShortcut(.leftArrow, modifiers: [.command])
+                Button("Forward") {
+                    WRouter_PathManager.shared.forward()
+                }
+                .keyboardShortcut(.rightArrow, modifiers: [.command])
+            })
+#endif
+        })
     }
 }
