@@ -43,7 +43,7 @@ struct WRouterView<Content: View>: View {
                         .font(.system(size: 32))
                         .foregroundStyle(Color.white)
                         .padding(12)
-                        .opacity(CGFloat(max((32 + frwdOffset) / 128, 0)))
+                        .opacity(CGFloat(max((48 + frwdOffset) / 96, 0)))
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
@@ -55,7 +55,7 @@ struct WRouterView<Content: View>: View {
                         .font(.system(size: 32))
                         .foregroundStyle(Color.white)
                         .padding(12)
-                        .opacity(CGFloat(max((32 + bkwdOffset) / 128, 0)))
+                        .opacity(CGFloat(max((48 + bkwdOffset) / 96, 0)))
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
