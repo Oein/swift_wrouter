@@ -5,14 +5,21 @@ import SwiftUI
 struct WRouterView<Content: View>: View {
     let content: (_ path: String, _ queryparm: String) -> Content
     
+#if os(iOS)
     let maxAllowance: CGFloat = 10;
     let minMovement: CGFloat = 3;
     
+    let actionThresould: CGFloat = min(96, Device().width / 3);
+    
+    
     @State var frwdOffset: CGFloat = -64;
     @State var bkwdOffset: CGFloat = -64;
+    
     @State var detectedGesture: WRouter_GestureType = .detecting;
+    @State var offsetPointReached = false;
     
     @State var yofset: CGFloat = 0;
+#endif
     
     init(@ViewBuilder content: @escaping (_ path: String, _ queryparm: String) -> Content) {
         self.content = content
@@ -30,11 +37,13 @@ struct WRouterView<Content: View>: View {
                 }
                 .frame(alignment: .topLeading)
                 
+#if os(iOS)
                 VStack {
                     Image(systemName: "arrowshape.turn.up.backward")
                         .font(.system(size: 32))
                         .foregroundStyle(Color.white)
                         .padding(12)
+                        .opacity(CGFloat(max((32 + frwdOffset) / 128, 0)))
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
@@ -46,11 +55,13 @@ struct WRouterView<Content: View>: View {
                         .font(.system(size: 32))
                         .foregroundStyle(Color.white)
                         .padding(12)
+                        .opacity(CGFloat(max((32 + bkwdOffset) / 128, 0)))
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
                 .edgesIgnoringSafeArea(.all)
                 .offset(x: (-64 - bkwdOffset) + geo.size.width, y: yofset - geo.safeAreaInsets.top - 22)
+#endif
             }
             .frame(
                 maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading
@@ -99,8 +110,18 @@ struct WRouterView<Content: View>: View {
                                     bkwdOffset = min((-1 * value.translation.width) - 64, 0) + calcBitoffset(ofst: (-1 * value.translation.width) - 32)
                                 }
                             }
+                            
+                            if abs(horizontalAmount) >= actionThresould && !offsetPointReached {
+                                offsetPointReached = true;
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            }
+                            
+                            if abs(horizontalAmount) <= actionThresould / 2 && offsetPointReached {
+                                offsetPointReached = false;
+                            }
                         } else {
                             detectedGesture = .none;
+                            offsetPointReached = false;
                         }
                     }
                     .onEnded { value in
@@ -112,26 +133,37 @@ struct WRouterView<Content: View>: View {
                             return;
                         }
                         
-                        if detectedGesture == .backward {
-                            WPath.shared.backward()
-                        }
-                        if detectedGesture == .forward {
-                            WPath.shared.forward()
+                        let movement = abs(value.translation.width)
+                        
+                        if movement >= actionThresould {
+                            if detectedGesture == .backward {
+                                WPath.shared.backward()
+                            }
+                            if detectedGesture == .forward {
+                                WPath.shared.forward()
+                            }
+                            
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         }
                         
                         detectedGesture = .detecting;
+                        offsetPointReached = false;
                     }
             )
 #endif
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
+
+#if os(iOS)
     func calcBitoffset(ofst: CGFloat) -> CGFloat {
-        return 0.01 * log2(abs(ofst)) * abs(ofst)
+        if ofst < 0 {
+            return 0;
+        }
+        let ofb = abs(ofst) + 10
+        return log2(ofb * ofb) + 0.04 * log2(abs(ofst + 4)) * abs(ofst)
     }
     
-#if os(iOS)
     func isPathGesture(startLocation: CGPoint) -> WRouter_GestureType {
         if startLocation.x <= maxAllowance {
             return .backward
