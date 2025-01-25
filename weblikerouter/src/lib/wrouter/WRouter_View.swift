@@ -12,13 +12,15 @@ struct WRouterView<Content: View>: View {
     @State var bkwdOffset: CGFloat = -64;
     @State var detectedGesture: WRouter_GestureType = .detecting;
     
+    @State var yofset: CGFloat = 0;
+    
     init(@ViewBuilder content: @escaping (_ path: String, _ queryparm: String) -> Content) {
         self.content = content
     }
     
     var body: some View {
         GeometryReader { geo in
-            ZStack {
+            ZStack(alignment: .topLeading) {
                 if WPath.shared.background != nil {
                     Color(WPath.shared.background!).edgesIgnoringSafeArea(.all)
                 }
@@ -36,7 +38,8 @@ struct WRouterView<Content: View>: View {
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
-                .offset(x: frwdOffset)
+                .edgesIgnoringSafeArea(.all)
+                .offset(x: frwdOffset, y: yofset - geo.safeAreaInsets.top - 22)
                 
                 VStack {
                     Image(systemName: "arrowshape.turn.up.forward")
@@ -46,7 +49,8 @@ struct WRouterView<Content: View>: View {
                 }
                 .background(Color.black.opacity(0.8))
                 .clipShape(.circle)
-                .offset(x: (-64 - bkwdOffset) + geo.size.width)
+                .edgesIgnoringSafeArea(.all)
+                .offset(x: (-64 - bkwdOffset) + geo.size.width, y: yofset - geo.safeAreaInsets.top - 22)
             }
             .frame(
                 maxWidth:.infinity,maxHeight:.infinity,alignment:.topLeading
@@ -84,6 +88,7 @@ struct WRouterView<Content: View>: View {
                             }
                             
                             detectedGesture = movementLike;
+                            yofset = value.startLocation.y
                             
                             if movementLike == .backward {
                                 withAnimation(.interactiveSpring) {
